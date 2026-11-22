@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=no">
+<meta name="theme-color" content="#0b1220">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icon.svg">
+<title>EDM Salgı Sıfırlama</title>
+<style>
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{margin:0;font-family:system-ui,sans-serif;background:#0b1220;color:#e2e8f0;padding:12px;max-width:540px;margin:auto}
+h1{font-size:19px;margin:6px 0 2px}
+.sub{color:#64748b;font-size:12px;margin-bottom:10px}
+.card{background:#162033;border-radius:14px;padding:12px;margin-bottom:12px;border:1px solid #1f2d46}
+label{display:block;font-size:12px;color:#94a3b8;margin:6px 0 2px}
+input,select{width:100%;padding:11px;font-size:20px;border-radius:9px;border:1px solid #2b3b58;background:#0b1220;color:#fff}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+button{width:100%;padding:15px;font-size:18px;border:0;border-radius:11px;background:linear-gradient(#34d399,#10b981);color:#032014;font-weight:800;margin-top:10px}
+button.sec{background:#2b3b58;color:#e2e8f0;font-size:15px;padding:11px}
+.big{font-size:24px;font-weight:800}
+.step{background:#0b1220;border-left:6px solid #38bdf8;padding:10px 12px;margin:8px 0;border-radius:8px;font-size:17px}
+.step.l{border-color:#f59e0b}.step.t{border-color:#22c55e}
+.ok{color:#34d399;font-size:26px;font-weight:900;text-align:center;padding:10px}
+.banner{background:#1e3a5f;border-radius:10px;padding:8px 10px;margin-bottom:8px;font-size:14px}
+.warn{background:#5b2a12}
+.chips{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px}
+.chip{background:#0b1220;border-radius:20px;padding:4px 10px;font-size:13px;color:#94a3b8}
+.chip.g{color:#34d399}
+small,.mut{color:#94a3b8}
+svg{width:100%;display:block;margin:auto}
+#plot{max-width:300px}#dia{max-width:260px}
+.tir{font-size:40px;font-weight:900;text-align:center;line-height:1}
+details summary{cursor:pointer;color:#38bdf8;padding:4px 0}
+.spec{font-size:12px;color:#64748b;margin-top:6px;line-height:1.4}
+</style>
+</head>
+<body>
+<h1>EDM Malafa Salgı Sıfırlama</h1>
+<div class="sub" style="display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap">
+  <span>6× M3 (0,5 mm) · 30 mm altıgen · Ø9,5 mm çubuk</span>
+  <a href="tel-kesme/index.html" style="color:#38bdf8;text-decoration:none;background:#162033;border:1px solid #2b3b58;padding:4px 9px;border-radius:8px;font-weight:700">Tel Kesme Asistanı →</a>
+</div>
+
+<div class="card">
+<b>Komparatör okumaları</b>
+<small><br>Vida 1 komparatöre bakınca = 0°. Malafayı çeyrek tur çevirerek 90°, 180°, 270° okuyun. Eksi değerleri "-" ile yazın.</small>
+<div class="row">
+<div><label>0° (Vida 1)</label><input id="r0" inputmode="text" autocomplete="off" value="0"></div>
+<div><label>90°</label><input id="r90" inputmode="text" autocomplete="off" value="0"></div>
+<div><label>180°</label><input id="r180" inputmode="text" autocomplete="off" value="0"></div>
+<div><label>270°</label><input id="r270" inputmode="text" autocomplete="off" value="0"></div>
+</div>
+<small>Birim: <b id="unitLbl">µm</b> (Ayarlardan değişir)</small>
+<button id="calc">HESAPLA</button>
+<button class="sec" id="newjob">Yeni iş (öğrenmeyi sıfırla)</button>
+</div>
+
+<div class="card" id="outcard" style="display:none">
+<div id="banner"></div>
+<div class="tir" id="tirv"></div>
+<div class="mut" style="text-align:center;margin-bottom:6px" id="tirsub"></div>
+<svg id="plot" viewBox="-100 -100 200 200"></svg>
+<div id="out"></div>
+<svg id="dia" viewBox="-120 -120 240 240"></svg>
+<div class="chips" id="hist"></div>
+</div>
+
+<div class="card">
+<details><summary>Ayarlar (M3 · 6 vida · Kafa ölçüleri)</summary>
+<div class="row">
+<div><label>Birim</label><select id="unit"><option value="1000">µm</option><option value="1">mm</option></select></div>
+<div><label>Hedef TIR (<span id="tolu">µm</span>)</label><input id="tol" inputmode="decimal" value="5"></div>
+<div><label>Vida sayısı</label><select id="nScrews"><option value="4">4 vida (90°)</option><option value="5">5 vida (72°)</option><option value="6" selected>6 vida (60°)</option><option value="7">7 vida</option><option value="8">8 vida (45°)</option></select></div>
+<div><label>Vida hatvesi (mm) M3=0.5</label><input id="pitch" inputmode="decimal" value="0.5"></div>
+<div><label>Komparatör mesafesi (mm)</label><input id="measL" inputmode="decimal" value="150"></div>
+<div><label>Altıgen yüksekliği (mm)</label><input id="hexH" inputmode="decimal" value="20"></div>
+<div><label>Kaldıraç oranı K</label><input id="K" inputmode="decimal" value="10.4"></div>
+<div><label>Vida 1 açısı (°)</label><input id="a0" inputmode="decimal" value="0"></div>
+<div><label>Malafayı çevirme yönü (yukarıdan bakınca)</label><select id="spin"><option value="1">Saat yönü ↻</option><option value="-1">Saat yönü tersi ↺</option></select></div>
+<div><label>Vida numaraları yönü (yukarıdan bakınca)</label><select id="num"><option value="1">Saat yönü tersi ↺</option><option value="-1">Saat yönü ↻</option></select></div>
+</div>
+<div class="spec">
+<b>Kayıtlı kafa geometrisi:</b> Altıgen 30 mm (yükseklik 20 mm), üst sıkma yeri 34 mm, çubuk yarıçapı 4,75 mm (Ø9,5 mm), M3 cıvata (hatve 0,50 mm).<br>
+Komparatör mesafesi veya altıgen yüksekliği değişince başlangıç K otomatik hesaplanır; 2. ölçümden itibaren gerçek K otomatik öğrenilir.
+</div>
+</details>
+</div>
+
+<script src="logic.js?v=7"></script>
+<script>
+const $=id=>document.getElementById(id), P=EDM.parse;
+const keys=['unit','tol','pitch','measL','hexH','K','spin','num','a0','nScrews'];
+for(const k of keys){const v=localStorage.getItem('edm3_'+k);if(v!==null)$(k).value=v;}
+function save(){keys.forEach(k=>localStorage.setItem('edm3_'+k,$(k).value));}
+function recalcK(){
+ const L=P($('measL').value), H=P($('hexH').value);
+ if(L>0&&H>0){const lv=0.8*H; $('K').value=((L+lv)/lv).toFixed(1);}
+}
+$('measL').addEventListener('change',()=>{recalcK();save();});
+$('hexH').addEventListener('change',()=>{recalcK();save();});
+keys.forEach(k=>$(k).addEventListener('change',()=>{save();units();}));
+function U(){return +$('unit').value;} // 1000 => um
+function units(){$('unitLbl').textContent=U()===1000?'µm':'mm';$('tolu').textContent=U()===1000?'µm':'mm';}
+units();
+let prev=null,hist=JSON.parse(localStorage.getItem('edm3_hist')||'[]');
+function saveState(){localStorage.setItem('edm3_prev',JSON.stringify(prev));localStorage.setItem('edm3_hist',JSON.stringify(hist));}
+prev=JSON.parse(localStorage.getItem('edm3_prev')||'null');
+
+function drawDia(a0,acts,N){
+ N=N||+$('nScrews').value||6;
+ let body='';
+ if(N===6){
+  const pts=[];
+  for(let i=0;i<6;i++){const a=(a0+30+60*i)*Math.PI/180;pts.push(`${(52*Math.cos(a)).toFixed(1)},${(-52*Math.sin(a)).toFixed(1)}`);}
+  body=`<polygon points="${pts.join(' ')}" fill="#26364f" stroke="#64748b" stroke-width="2"/>`;
+ }else{
+  body='<circle r="46" fill="#26364f" stroke="#64748b" stroke-width="2"/>';
+ }
+ // 30 mm altigene oranli 9.5 mm cubuk (4.75/15 * 48 ≈ 15 px)
+ let s=body+'<circle r="15" fill="#0b1220" stroke="#94a3b8" stroke-width="1.5"/>';
+ const col={};acts.forEach(a=>{if(a.single){col[a.screw]=a.tighten?'#22c55e':'#f59e0b';}else{col[a.loose]='#f59e0b';col[a.tight]='#22c55e';}});
+ for(let i=0;i<N;i++){const a=(a0+(360/N)*i)*Math.PI/180,x=88*Math.cos(a),y=-88*Math.sin(a),c=col[i+1]||'#475569';
+  s+=`<line x1="${45*Math.cos(a)}" y1="${-45*Math.sin(a)}" x2="${x}" y2="${y}" stroke="${c}" stroke-width="4"/><circle cx="${x}" cy="${y}" r="15" fill="${c}"/><text x="${x}" y="${y+6}" text-anchor="middle" font-size="17" font-weight="800" fill="#0b1220">${i+1}</text>`;}
+ $('dia').innerHTML=s;}
+function drawPlot(r,tolE,ex,ey){
+ const R=Math.max(r,tolE)*1.4||1,k=90/R,px=ex*k,py=-ey*k;
+ let s=`<circle r="90" fill="none" stroke="#1f2d46"/><circle r="45" fill="none" stroke="#1f2d46" stroke-dasharray="3"/><line x1="-95" x2="95" stroke="#1f2d46"/><line y1="-95" y2="95" stroke="#1f2d46"/>`+
+ `<circle r="${tolE*k}" fill="#10b98122" stroke="#10b981" stroke-width="2"/>`+
+ `<line x1="${px}" y1="${py}" x2="0" y2="0" stroke="#38bdf8" stroke-dasharray="4"/><circle cx="${px}" cy="${py}" r="7" fill="#f87171"/>`+
+ `<text x="92" y="-4" font-size="9" fill="#64748b" text-anchor="end">0°</text><text x="3" y="-91" font-size="9" fill="#64748b">90°</text>`;
+ $('plot').innerHTML=s;}
+function fmt(v){return (v*U()).toFixed(U()===1000?1:4);}
+function ang(d){return `<span class="big">${d.toFixed(d<10?1:0)}°</span> <small>(≈ ${(d/6).toFixed(1)} dk · ${(d/360).toFixed(2)} tur)</small>`;}
+
+$('calc').onclick=()=>{
+ const r=['r0','r90','r180','r270'].map(i=>P($(i).value)/U());
+ if(r.some(isNaN)){alert('Dört değeri de sayı olarak girin');return;}
+ const cfg={pitch:P($('pitch').value),K:P($('K').value),tol:P($('tol').value)/U(),dir:(+$('spin').value)*(+$('num').value),a0:P($('a0').value),nScrews:+$('nScrews').value||6};
+ if(!(cfg.pitch>0)||!cfg.K||isNaN(cfg.tol)||isNaN(cfg.a0)){alert('Ayarlardaki değerleri kontrol edin');return;}
+ save();
+ let banner='';
+ const cur=EDM.analyze(r,cfg);
+ if(prev){
+  const L=EDM.learn(prev,cur,cfg.K,cfg.tol);
+  if(L&&L.mismatch){$('num').value=String(-(+$('num').value));save();cfg.dir=-cfg.dir;prev=null;banner=`<div class="banner warn">🔄 Düzeltmenin etkisi beklenen yönde değil: yön ayarı ters görünüyor. <b>"Vida numaraları yönü" otomatik çevrildi.</b> Aşağıdaki yeni talimata göre devam edin.</div>`;}
+   else if(L&&L.changed){
+   const old=cfg.K;cfg.K=L.K;$('K').value=L.K.toFixed(2);save();
+   banner=`<div class="banner${L.g<0?' warn':''}">🧠 Öğrendi: önceki düzeltme beklenen etkinin <b>%${(L.g*100).toFixed(0)}</b>'ini yaptı. K: ${old.toFixed(2)} → <b>${L.K.toFixed(2)}</b>${L.g<0?'<br>⚠ Etki ters yöndeydi, yönler otomatik tersine çevrildi.':''}</div>`;
+  } else if(L) banner=`<div class="banner warn">⚠ Önceki düzeltmenin etkisi görünmüyor. Vidaları çevirdiniz mi? K değişmedi.</div>`;
+ }
+ const res=EDM.analyze(r,cfg);
+ hist.push(res.tir);
+ $('outcard').style.display='block';
+ $('banner').innerHTML=banner;
+ $('tirv').innerHTML=`<span style="color:${res.ok?'#34d399':'#f87171'}">${fmt(res.tir)}</span> <small>${U()===1000?'µm':'mm'} TIR</small>`;
+ $('tirsub').textContent='Hedef: '+fmt(cfg.tol)+(U()===1000?' µm':' mm')+' · Kaçıklık yönü: '+(Math.atan2(res.ey,res.ex)*180/Math.PI).toFixed(0)+'°';
+ drawPlot(res.mag,cfg.tol/2,res.ex,res.ey);
+ drawDia(cfg.a0,res.actions);
+ if(res.ok){
+  $('out').innerHTML=`<div class="ok">✔ SIFIRLANDI<br><small>${hist.length} ölçümde tamamlandı</small></div>`;
+  prev=null;
+  if(navigator.vibrate)navigator.vibrate([100,50,100]);
+ }else{
+  let h='';
+  res.actions.forEach(a=>{
+   if(a.single){h+=`<div class="step ${a.tighten?'t':'l'}">Vida <b>${a.screw}</b> → ${a.tighten?'SIK':'GEVŞET'}<br>${ang(a.deg)}</div>`;return;}
+   h+=`<div class="step l"><b>1.</b> Vida <b>${a.loose}</b> → GEVŞET<br>${ang(a.deg)}</div><div class="step t"><b>2.</b> Vida <b>${a.tight}</b> → SIK<br>${ang(a.deg)}</div>`;});
+  if(!h)h='<div class="mut">Düzeltme çok küçük.</div>';
+  $('out').innerHTML=h+'<small>Önce gevşet, sonra sık. Sonra 4 konumu yeniden ölç.</small>';
+  prev={ex:res.ex,ey:res.ey};
+ }
+ $('hist').innerHTML='<span class="mut">Turlar:</span>'+hist.map((t,i)=>`<span class="chip${t<=cfg.tol?' g':''}">#${i+1} ${fmt(t)}</span>`).join('');
+ saveState();
+};
+$('newjob').onclick=()=>{prev=null;hist=[];saveState();$('outcard').style.display='none';
+ ['r0','r90','r180','r270'].forEach(i=>$(i).value='0');window.scrollTo(0,0);};
+
+if('serviceWorker' in navigator)navigator.serviceWorker.register('sw.js');
+</script>
+</body>
+</html>

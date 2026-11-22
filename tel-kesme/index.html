@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=no">
+<meta name="theme-color" content="#0b1220">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="../icon.svg">
+<title>EXCETEK Tel Kesme Asistanı</title>
+<style>
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{margin:0;font-family:system-ui,sans-serif;background:#0b1220;color:#e2e8f0;padding:12px;max-width:560px;margin:auto}
+.top{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:4px}
+h1{font-size:18px;margin:0}
+.navlink{font-size:12px;color:#38bdf8;text-decoration:none;background:#162033;border:1px solid #2b3b58;padding:6px 10px;border-radius:8px;white-space:nowrap}
+.sub{color:#64748b;font-size:12px;margin-bottom:10px}
+.tabs{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin-bottom:12px}
+.tab{padding:10px 6px;border-radius:10px;border:1px solid #2b3b58;background:#162033;color:#94a3b8;font-weight:700;font-size:13px;text-align:center;cursor:pointer}
+.tab.act{background:#10b981;color:#032014;border-color:#10b981}
+.card{background:#162033;border-radius:14px;padding:12px;margin-bottom:12px;border:1px solid #1f2d46}
+label{display:block;font-size:12px;color:#94a3b8;margin:6px 0 2px}
+input,select{width:100%;padding:10px;font-size:17px;border-radius:9px;border:1px solid #2b3b58;background:#0b1220;color:#fff}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+button{width:100%;padding:14px;font-size:16px;border:0;border-radius:11px;background:linear-gradient(#34d399,#10b981);color:#032014;font-weight:800;margin-top:10px;cursor:pointer}
+button.sec{background:#2b3b58;color:#e2e8f0;font-size:14px;padding:10px}
+button.del{background:#451a1a;color:#fca5a5;font-size:13px;padding:6px 10px;width:auto;margin:0}
+.badge{display:inline-block;padding:4px 10px;border-radius:20px;font-size:12px;font-weight:800}
+.b-crit{background:#7f1d1d;color:#fecaca}.b-high{background:#78350f;color:#fde68a}.b-mid{background:#1e3a5f;color:#bae6fd}.b-low{background:#064e3b;color:#a7f3d0}
+.warn{background:#451a03;border-left:4px solid #f59e0b;padding:8px 10px;border-radius:7px;font-size:13px;margin:6px 0;line-height:1.4}
+.okbox{background:#064e3b;border-left:4px solid #34d399;padding:8px 10px;border-radius:7px;font-size:13px;margin:6px 0}
+.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;margin-top:8px}
+.cell{background:#0b1220;border:1px solid #253552;border-radius:10px;padding:8px;text-align:center}
+.cell .k{font-size:11px;color:#94a3b8;font-weight:700}
+.cell .v{font-size:22px;font-weight:900;color:#34d399;line-height:1.2}
+.cell .d{font-size:11px;color:#64748b}
+.cell.chg{border-color:#f59e0b}
+.cell.chg .d{color:#fbbf24;font-weight:700}
+.sym{display:block;width:100%;text-align:left;background:#0b1220;border:1px solid #2b3b58;color:#e2e8f0;padding:11px;border-radius:10px;margin:6px 0;font-size:14px;font-weight:600}
+.sym.sel{border-color:#38bdf8;background:#1e3a5f}
+.fix{background:#0b1220;border-left:5px solid #38bdf8;padding:10px 12px;border-radius:8px;margin-top:8px;font-size:14px;line-height:1.5}
+.fix ul{margin:6px 0 0 18px;padding:0}
+.fix li{margin:4px 0}
+.rec{background:#0b1220;border:1px solid #2b3b58;border-radius:10px;padding:10px;margin:8px 0;display:flex;justify-content:space-between;align-items:center;gap:8px}
+small,.mut{color:#94a3b8}
+.hide{display:none}
+</style>
+</head>
+<body>
+<div class="top">
+  <h1>EXCETEK Tel Kesme</h1>
+  <a class="navlink" href="../index.html">← Dalma Sıfırlama</a>
+</div>
+<div class="sub">0.25 mm pirinç tel · minimum kopma &amp; 3087 AWT asistanı</div>
+
+<div class="tabs">
+  <div class="tab act" data-t="opt">Parametre</div>
+  <div class="tab" data-t="diag">Kopma / AWT</div>
+  <div class="tab" data-t="rec">Reçeteler</div>
+</div>
+
+<!-- SEKME 1: PARAMETRE OPTIMIZASYONU -->
+<div id="t-opt">
+  <div class="card">
+    <b>İş Parçası ve Tezgah Durumu</b>
+    <div class="row">
+      <div><label>Malzeme</label><select id="mat">
+        <option value="skd" selected>SKD / Takım Çeliği</option>
+        <option value="steel">Çelik (S45C)</option>
+        <option value="ss">Paslanmaz (304/316)</option>
+        <option value="alu">Alüminyum</option>
+        <option value="carbide">Karbür (WC)</option>
+        <option value="copper">Bakır / Pirinç</option>
+      </select></div>
+      <div><label>Kesim Profili</label><select id="profile">
+        <option value="arc" selected>Kavisli / Yarım Ay (30°)</option>
+        <option value="straight">Düz Kesim</option>
+        <option value="taper">Konik (Taper)</option>
+        <option value="corner">Keskin Köşeli</option>
+      </select></div>
+      <div><label>Parça Kalınlığı TH (mm)</label><input id="th" type="number" step="0.5" value="12.5"></div>
+      <div><label>Nozul / Su Basma Durumu</label><select id="flush">
+        <option value="single" selected>Tek taraflı açık (Üst yakın, ALT boşta)</option>
+        <option value="closed">İki nozul da kapalı (Tabla üstü)</option>
+        <option value="double">Çift taraflı açık (Üst + Alt uzak)</option>
+      </select></div>
+      <div><label>Alt/Üst En Büyük Boşluk (mm)</label><input id="gap" type="number" step="1" value="44"></div>
+      <div><label>Su İletkenliği (µS)</label><input id="cond" type="number" step="1" value="21"></div>
+      <div><label>Tel Çapı (mm)</label><select id="wire">
+        <option value="0.25" selected>0.25 mm (Pirinç)</option>
+        <option value="0.20">0.20 mm</option>
+        <option value="0.30">0.30 mm</option>
+        <option value="0.15">0.15 mm</option>
+      </select></div>
+      <div><label>Kaplamalı Tel?</label><select id="coated">
+        <option value="0" selected>Hayır (Pirinç / Brass)</option>
+        <option value="1">Evet (Kaplamalı)</option>
+      </select></div>
+    </div>
+    <div><label>Hedef Mod</label><select id="mode">
+      <option value="safe" selected>🛡 Minimum Kopma (Önerilen)</option>
+      <option value="balanced">⚖ Dengeli</option>
+      <option value="fast">⚡ Hızlı</option>
+    </select></div>
+    <button id="run">EXCETEK PARAMETRESİ HESAPLA</button>
+  </div>
+
+  <div class="card" id="rescard">
+    <div style="display:flex;justify-content:space-between;align-items:center">
+      <b>EXCETEK Önerilen Değerler</b>
+      <span id="riskb" class="badge b-crit">KRİTİK</span>
+    </div>
+    <div id="exmode" class="okbox"></div>
+    <div id="warns"></div>
+    <div class="grid" id="pgrid"></div>
+    <small style="display:block;margin-top:8px">Sarı çerçeveli kutular mevcut <b>NO.1511</b> (ON=13, OFF=9, SV=34) değerlerine göre değişenlerdir.</small>
+    <button class="sec" id="saveRec">Bu Parametreyi Reçetelere Kaydet</button>
+  </div>
+
+  <div class="card">
+    <b>Gerçek Süre &amp; Kopma Maliyet Hesabı</b>
+    <small><br>Hızlı ama kopmalı kesim vs. Stabil kopmasız kesim:</small>
+    <div class="row">
+      <div><label>Toplam Kesim Boyu (mm)</label><input id="len" type="number" value="2735"></div>
+      <div><label>Saatte Kopma (Mevcut)</label><input id="bph" type="number" step="0.5" value="2.5"></div>
+      <div><label>Oto Bağlama (dk)</label><input id="amin" type="number" step="0.5" value="1.5"></div>
+      <div><label>Manuel Müdahale (dk)</label><input id="mmin" type="number" step="0.5" value="6.5"></div>
+    </div>
+    <div id="timebox" class="okbox" style="margin-top:10px"></div>
+  </div>
+</div>
+
+<!-- SEKME 2: KOPMA & AWT SIHIRBAZI -->
+<div id="t-diag" class="hide">
+  <div class="card">
+    <b>Tezgahta ne yaşanıyor? Seçin:</b>
+    <button class="sym sel" data-s="awt">🔴 3087 AWT fail — Tel kopunca bağlamıyor (6-7 dk kayıp)</button>
+    <button class="sym" data-s="open">💧 Üst nozul yüksekte (Z=56 mm / Açık su basma kopması)</button>
+    <button class="sym" data-s="arc">🌙 Kavis / yarım ay ortasında sürekli tel kopuyor</button>
+    <button class="sym" data-s="entry">▶ Parçaya girişte veya çıkışta kopuyor</button>
+    <button class="sym" data-s="cond">⚡ Su iletkenliği 20 µS üstünde &amp; ark yapıyor</button>
+    <div id="diagout" class="fix"></div>
+  </div>
+</div>
+
+<!-- SEKME 3: RECETELER -->
+<div id="t-rec" class="hide">
+  <div class="card">
+    <b>Kayıtlı Parça Reçeteleri</b>
+    <small><br>Tezgahta kopmasız çalışan parametrelerinizi burada saklayın.</small>
+    <div id="reclist" style="margin-top:8px"></div>
+  </div>
+</div>
+
+<script src="calc.js?v=2"></script>
+<script>
+const $=id=>document.getElementById(id);
+// Sekmeler
+document.querySelectorAll('.tab').forEach(t=>t.onclick=()=>{
+ document.querySelectorAll('.tab').forEach(x=>x.classList.remove('act'));
+ t.classList.add('act');
+ ['opt','diag','rec'].forEach(k=>$('t-'+k).classList.toggle('hide',k!==t.dataset.t));
+ if(t.dataset.t==='rec')renderRecs();
+});
+
+const fkeys=['mat','profile','th','flush','gap','wire','cond','mode','coated','len','bph','amin','mmin'];
+fkeys.forEach(k=>{const v=localStorage.getItem('wire2_'+k);if(v!==null)$(k).value=v;});
+function saveF(){fkeys.forEach(k=>localStorage.setItem('wire2_'+k,$(k).value));}
+
+let lastOut=null;
+function calc(){
+ saveF();
+ const inp={mat:$('mat').value,profile:$('profile').value,th:+$('th').value,flush:$('flush').value,gap:+$('gap').value,
+  wire:+$('wire').value,cond:+$('cond').value,mode:$('mode').value,coated:$('coated').value==='1'};
+ const r=WIRE.compute(inp); lastOut={inp,r};
+ const rb=$('riskb');
+ rb.textContent=`KOPMA RİSKİ: ${r.riskLabel} (${r.risk}%)`;
+ rb.className='badge '+(r.risk>=65?'b-crit':r.risk>=40?'b-high':r.risk>=22?'b-mid':'b-low');
+ $('exmode').innerHTML=`<b>EXCETEK Condition > Other:</b> <span style="font-size:16px;color:#34d399">"${r.excetekMode}"</span> seçin · Tahmini stabil hız: <b>${r.estF} mm/dk</b>`;
+ $('warns').innerHTML=r.warnings.map(w=>`<div class="warn">⚠ ${w}</div>`).join('');
+
+ const order=['ON','OFF','SV','AON','AOFF','WF','WT','WA','FR','PM','OV'];
+ const labels={ON:'ON',OFF:'OFF',SV:'SV',AON:'AON',AOFF:'AOFF',WF:'WF',WT:'WT',WA:'WA',FR:'FR%',PM:'PM',OV:'OV'};
+ $('pgrid').innerHTML=order.map(k=>{
+  const v=r.params[k], b=r.base[k], ch=v!==b;
+  return `<div class="cell${ch?' chg':''}"><div class="k">${labels[k]}</div><div class="v">${v}</div><div class="d">${ch?`1511: ${b} → ${v}`:'aynı ('+b+')'}</div></div>`;
+ }).join('');
+
+ const tm=WIRE.compareTime(+$('len').value||2735, 3.6, +$('bph').value||2.5, 0.5, +$('amin').value||1.5, +$('mmin').value||6.5, r.estF, 0.15);
+ const fmtH=m=>`${Math.floor(m/60)} sa ${m%60} dk`;
+ $('timebox').innerHTML=
+  `<b>Mevcut kopmalı (3.6 mm/dk):</b> ~${tm.fastBreaks} kopma → Toplam <b>${fmtH(tm.fastTotal)}</b><br>`+
+  `<b>Önerilen stabil (${r.estF} mm/dk):</b> ~${tm.safeBreaks} kopma → Toplam <b>${fmtH(tm.safeTotal)}</b><br>`+
+  (tm.savedMin>0?`<span style="color:#34d399;font-weight:800">✔ Yaklaşık ${tm.savedMin} dakika kazanç ve müdahalesiz kesim!</span>`:
+   `<span style="color:#fbbf24">Stabil kesim toplamda ${Math.abs(tm.savedMin)} dk uzun sürer ama başından ayrılabilirsiniz (sıfır manuel müdahale).</span>`);
+}
+$('run').onclick=calc;
+fkeys.forEach(k=>$(k).addEventListener('change',calc));
+calc();
+
+// Ariza Sihirbazi
+const DIAG={
+ awt:`<b>3087 AWT Fail (Tel Bağlamama) Çözüm Listesi:</b><ul>
+  <li><b>1. Başlangıç Noktasında Bağla (Start Point AWT):</b> EXCETEK ayarlarında tel kopunca kesim yarığında değil, <i>başlangıç noktasına / açık alana dönüp bağla</i> seçeneğini açın. 0.25 mm yarığa Z=56 mm'den tel sokmak neredeyse imkansızdır.</li>
+  <li><b>2. Elmas Kılavuz (Diamond Guide) Temizliği:</b> Alarm doğrudan kılavuz içi cürufa işaret ediyor. Alt ve üst elmas kılavuzu söküp temizleyin.</li>
+  <li><b>3. Tel Tavlama (Annealing / Stretch):</b> Kesilen tel ucu tam düz çıkmıyorsa (kıvrıksa) AWT tavlama akımını/süresini +1 kademe kontrol edin.</li>
+  <li><b>4. Su Jeti Hizası:</b> Su jeti tam alt kılavuz deliğine düşmüyorsa AWT sürekli hata verir; üst-alt kılavuz eksenini kontrol edin.</li></ul>`,
+ open:`<b>Açık Su Basma (Z=56 mm, Parça=12.5 mm) Çözümü:</b><ul>
+  <li><b>EXCETEK ekranı:</b> EDM > Condition > Other bölümünde <b>NORMAL</b> yerine <b>Open</b> seçin.</li>
+  <li><b>Hemen değiştirin:</b> <code>ON: 13→9</code>, <code>OFF: 9→16</code>, <code>SV: 34→46</code>, <code>WF: 7→10</code>, <code>FR%: 200→100</code>.</li>
+  <li><b>Su basıncı (WA):</b> Çok yüksek basınç teli titreştirir; <b>WA = 4 veya 5</b> bandında sabit tutun.</li>
+  <li><b>Fikstür notu:</b> Mümkünse üst kafayı parçaya yaklaştıracak şekilde (Z'yi indirerek) bağlama yaparsanız hız 2 kat artar, kopma biter.</li></ul>`,
+ arc:`<b>Kavis / Yarım Ay Ortasında Tel Kopması:</b><ul>
+  <li>Uzun 30 cm kavisli kesimde iç gerilim (stres) parçayı kapatıp teli sıkıştırabilir! <b>Ön gerilim giderme veya kesim sonrası köprü (tab)</b> bırakın.</li>
+  <li><b>SV</b> değerini +4 artırın (örn. 34 → 44), <b>AOFF</b> değerini +4 artırın.</li>
+  <li><b>WF (Tel hızı)</b> 7'den 10'a çıkarın ki kavis boyunca aşınmış tel kopmasın.</li>
+  <li>Kavis içinde <b>FR% = 100</b> yapın (200% ani hızlanma yaratır).</li></ul>`,
+ entry:`<b>Girişte / Çıkışta Tel Kopması:</b><ul>
+  <li>Parça kenarına girerken su basıncı kaçar; girişten ilk 5 mm boyunca <b>SV +5</b> ve <b>ON -2</b> (veya EXCETEK <i>Auto-Entry / Slow Entry</i>) kullanın.</li>
+  <li>Çıkışta düşen parça teli kesebilir; <b>mıknatıs veya tutucu (köprü)</b> koyun.</li></ul>`,
+ cond:`<b>Yüksek Su İletkenliği (21 µS) Çözümü:</b><ul>
+  <li>SKD takım çeliğinde ideal iletkenlik <b>8–14 µS</b>'dir. 21 µS reçinenin bittiğini gösterir.</li>
+  <li>Reçineyi değiştirene kadar geçici olarak <b>OFF +2</b> ve <b>SV +2</b> vererek teli koruyun.</li>
+  <li>Filtre basıncını kontrol edin; kirli su yarığa cüruf taşır ve kısa devre yapar.</li></ul>`
+};
+function showDiag(k){
+ document.querySelectorAll('.sym').forEach(b=>b.classList.toggle('sel',b.dataset.s===k));
+ $('diagout').innerHTML=DIAG[k];
+}
+document.querySelectorAll('.sym').forEach(b=>b.onclick=()=>showDiag(b.dataset.s));
+showDiag('awt');
+
+// Receteler
+function getRecs(){return JSON.parse(localStorage.getItem('wire_recs')||'[]');}
+function renderRecs(){
+ const list=getRecs();
+ if(!list.length){$('reclist').innerHTML='<small>Henüz kayıtlı reçete yok. Parametre sekmesinden kaydedebilirsiniz.</small>';return;}
+ $('reclist').innerHTML=list.map((r,i)=>`<div class="rec"><div><b>${r.name}</b><br><small>ON:${r.p.ON} OFF:${r.p.OFF} SV:${r.p.SV} WF:${r.p.WF} WT:${r.p.WT} FR:${r.p.FR}% (${r.mode})</small></div><button class="del" onclick="delRec(${i})">Sil</button></div>`).join('');
+}
+window.delRec=i=>{const l=getRecs();l.splice(i,1);localStorage.setItem('wire_recs',JSON.stringify(l));renderRecs();};
+$('saveRec').onclick=()=>{
+ if(!lastOut)return;
+ const name=prompt('Parça / iş adı:',`SKD ${lastOut.inp.th}mm (${lastOut.r.excetekMode})`);
+ if(!name)return;
+ const l=getRecs();l.unshift({name,p:lastOut.r.params,mode:lastOut.r.excetekMode,ts:Date.now()});
+ localStorage.setItem('wire_recs',JSON.stringify(l.slice(0,20)));
+ alert('Reçete kaydedildi!');
+};
+
+if('serviceWorker' in navigator)navigator.serviceWorker.register('sw.js');
+</script>
+</body>
+</html>

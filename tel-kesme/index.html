@@ -14,9 +14,13 @@ body{margin:0;font-family:system-ui,sans-serif;background:#0b1220;color:#e2e8f0;
 h1{font-size:18px;margin:0}
 .navlink{font-size:12px;color:#38bdf8;text-decoration:none;background:#162033;border:1px solid #2b3b58;padding:6px 10px;border-radius:8px;white-space:nowrap}
 .sub{color:#64748b;font-size:12px;margin-bottom:10px}
-.tabs{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin-bottom:12px}
-.tab{padding:10px 6px;border-radius:10px;border:1px solid #2b3b58;background:#162033;color:#94a3b8;font-weight:700;font-size:13px;text-align:center;cursor:pointer}
+.tabs{display:grid;grid-template-columns:repeat(4,1fr);gap:5px;margin-bottom:12px}
+.tab{padding:9px 4px;border-radius:10px;border:1px solid #2b3b58;background:#162033;color:#94a3b8;font-weight:700;font-size:12px;text-align:center;cursor:pointer}
 .tab.act{background:#10b981;color:#032014;border-color:#10b981}
+textarea{width:100%;min-height:130px;padding:10px;font-family:monospace;font-size:13px;border-radius:9px;border:1px solid #2b3b58;background:#0b1220;color:#e2e8f0;resize:vertical}
+.chk{display:flex;align-items:center;gap:8px;font-size:13px;margin:6px 0;color:#e2e8f0}
+.chk input{width:18px;height:18px;margin:0}
+#gplot{width:100%;height:230px;background:#0b1220;border:1px solid #253552;border-radius:10px;display:block;margin:8px 0}
 .card{background:#162033;border-radius:14px;padding:12px;margin-bottom:12px;border:1px solid #1f2d46}
 label{display:block;font-size:12px;color:#94a3b8;margin:6px 0 2px}
 input,select{width:100%;padding:10px;font-size:17px;border-radius:9px;border:1px solid #2b3b58;background:#0b1220;color:#fff}
@@ -54,7 +58,8 @@ small,.mut{color:#94a3b8}
 
 <div class="tabs">
   <div class="tab act" data-t="opt">Parametre</div>
-  <div class="tab" data-t="diag">Kopma / AWT</div>
+  <div class="tab" data-t="gcode">G-Kodu</div>
+  <div class="tab" data-t="diag">Kopma/AWT</div>
   <div class="tab" data-t="rec">Reçeteler</div>
 </div>
 
@@ -149,7 +154,48 @@ small,.mut{color:#94a3b8}
   </div>
 </div>
 
-<!-- SEKME 2: KOPMA & AWT SIHIRBAZI -->
+<!-- SEKME 2: G-KODU OPTIMIZE EDICI -->
+<div id="t-gcode" class="hide">
+  <div class="card">
+    <div style="display:flex;justify-content:space-between;align-items:center;gap:6px">
+      <b>EXCETEK G-Kodu Optimize Edici</b>
+      <button class="sec" id="loadSample" style="width:auto;margin:0;padding:6px 10px;font-size:12px">Örnek P003 Yükle</button>
+    </div>
+    <small style="display:block;margin:4px 0 8px">Ham `.NC / .ISO` dosyanızı seçin veya yapıştırın. Giriş/çıkış E-kodu, köşe koruması (`M37/M38`) ve `0.0001 mm` doğrulama uygular.</small>
+    <input type="file" id="gfile" accept=".nc,.iso,.txt,.tap,.cnc,.prg" style="font-size:13px;padding:7px;margin-bottom:8px">
+    <textarea id="gin" placeholder="%&#10;O0003&#10;G90 G21 G42 H1&#10;G00 X594.798 Y125.000&#10;G01 X594.798 Y115.899&#10;G02 X301.349 Y-5.651 I-293.449 J293.449&#10;..."></textarea>
+    <div class="row" style="margin-top:6px">
+      <div><label>Ana E-Kodu</label><input id="gMainE" value="E1511"></div>
+      <div><label>Güvenli E-Kodu (Giriş/Çıkış)</label><input id="gSafeE" value="E1512"></div>
+      <div><label>Giriş/Çıkış Mesafesi (mm)</label><input id="gLead" type="number" step="0.5" value="4"></div>
+      <div><label>Köşe Koruma Eşiği (°)</label><input id="gAng" type="number" value="15"></div>
+    </div>
+    <label class="chk"><input type="checkbox" id="gUseEE" checked> Giriş ve çıkışta güvenli E-kodu uygula</label>
+    <label class="chk"><input type="checkbox" id="gUseCorner" checked> Keskin köşelere otomatik M37 / M38 – M39 ekle</label>
+    <label class="chk"><input type="checkbox" id="gUseSeg"> Uzun yayları 120 mm segmentlere böl</label>
+    <label class="chk"><input type="checkbox" id="gUseTab"> Kapanıştan 2 mm önce köprü (M00 duruşu) ekle</label>
+    <label class="chk"><input type="checkbox" id="gUseAwt"> Başlangıca G29 / G13 AWT kurtarma kodu ekle</label>
+    <button id="gRun">G-KODUNU ANALİZ ET VE OPTİMİZE ET</button>
+  </div>
+
+  <div class="card hide" id="gresCard">
+    <div style="display:flex;justify-content:space-between;align-items:center;gap:6px">
+      <b>2D Risk Haritası &amp; Doğrulama</b>
+      <span id="gBadge" class="badge b-low">DOĞRULANDI</span>
+    </div>
+    <div id="gStats" class="okbox"></div>
+    <svg id="gplot" viewBox="0 0 320 220"></svg>
+    <small>🟢 Normal kesim · 🟠 Güvenli giriş/çıkış · 🔴 Köşe koruması (`M37/M38`) · 🔵 Başlangıç</small>
+    <label style="margin-top:8px">Optimize Edilmiş EXCETEK G-Kodu:</label>
+    <textarea id="gout" readonly style="min-height:150px"></textarea>
+    <div class="row" style="margin-top:8px">
+      <button id="gDl" style="margin:0">Optimize .NC İndir</button>
+      <button class="sec" id="gCopy" style="margin:0">Kopyala</button>
+    </div>
+  </div>
+</div>
+
+<!-- SEKME 3: KOPMA & AWT SIHIRBAZI -->
 <div id="t-diag" class="hide">
   <div class="card">
     <b>Tezgahta ne yaşanıyor? Seçin:</b>
@@ -172,13 +218,14 @@ small,.mut{color:#94a3b8}
 </div>
 
 <script src="calc.js?v=2"></script>
+<script src="gcode.js?v=1"></script>
 <script>
 const $=id=>document.getElementById(id);
 // Sekmeler
 document.querySelectorAll('.tab').forEach(t=>t.onclick=()=>{
  document.querySelectorAll('.tab').forEach(x=>x.classList.remove('act'));
  t.classList.add('act');
- ['opt','diag','rec'].forEach(k=>$('t-'+k).classList.toggle('hide',k!==t.dataset.t));
+ ['opt','gcode','diag','rec'].forEach(k=>$('t-'+k).classList.toggle('hide',k!==t.dataset.t));
  if(t.dataset.t==='rec')renderRecs();
 });
 
@@ -312,6 +359,64 @@ $('saveRec').onclick=()=>{
  localStorage.setItem('wire_recs',JSON.stringify(l.slice(0,20)));
  alert('Reçete kaydedildi!');
 };
+
+// G-Kodu Optimize Edici UI
+const SAMPLE_P003=`%\nO0003\nG90 G21 G42 H1\nG00 X594.798 Y125.000\nG01 X594.798 Y115.899\nG02 X301.349 Y-5.651 I-293.449 J293.449\nX7.899 Y115.899 I0.0 J415.0\nG01 X7.899 Y125.000\nG40\nM02\n%`;
+$('loadSample').onclick=()=>{$('gin').value=SAMPLE_P003;runGcode();};
+$('gfile').onchange=e=>{const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=()=>{$('gin').value=r.result;runGcode();};r.readAsText(f);};
+function drawGplot(segs,corners){
+ const pts=[];
+ segs.forEach(m=>{
+  pts.push([m.x1,m.y1],[m.x2,m.y2]);
+  if(m.g===2||m.g===3){const n=Math.max(8,Math.ceil(Math.abs(m.da)*12));for(let i=1;i<n;i++){const a=m.a1+m.da*i/n;pts.push([m.cx+m.R*Math.cos(a),m.cy+m.R*Math.sin(a)]);}}
+ });
+ if(!pts.length){$('gplot').innerHTML='';return;}
+ let minX=Infinity,maxX=-Infinity,minY=Infinity,maxY=-Infinity;
+ pts.forEach(([x,y])=>{if(x<minX)minX=x;if(x>maxX)maxX=x;if(y<minY)minY=y;if(y>maxY)maxY=y;});
+ const w=maxX-minX||1,h=maxY-minY||1,pad=18,sc=Math.min((320-2*pad)/w,(220-2*pad)/h);
+ const ox=(320-w*sc)/2-minX*sc, oy=220-(220-h*sc)/2+minY*sc;
+ const tx=x=>(x*sc+ox).toFixed(1), ty=y=>(oy-y*sc).toFixed(1);
+ const colMap={normal:'#34d399',safe:'#f59e0b',corner:'#f87171'};
+ let s='';
+ segs.forEach(m=>{
+  const c=colMap[m.zone]||'#34d399';
+  if(m.g===1){s+=`<line x1="${tx(m.x1)}" y1="${ty(m.y1)}" x2="${tx(m.x2)}" y2="${ty(m.y2)}" stroke="${c}" stroke-width="2.5"/>`;}
+  else{
+   const n=Math.max(10,Math.ceil(Math.abs(m.da)*14)),p=[];
+   for(let i=0;i<=n;i++){const a=m.a1+m.da*i/n;p.push(`${tx(m.cx+m.R*Math.cos(a))},${ty(m.cy+m.R*Math.sin(a))}`);}
+   s+=`<polyline points="${p.join(' ')}" fill="none" stroke="${c}" stroke-width="2.5"/>`;
+  }
+ });
+ corners.forEach(c=>{s+=`<circle cx="${tx(c.x)}" cy="${ty(c.y)}" r="4.5" fill="#f87171" stroke="#0b1220" stroke-width="1"/>`;});
+ s+=`<circle cx="${tx(segs[0].x1)}" cy="${ty(segs[0].y1)}" r="5" fill="#38bdf8" stroke="#0b1220" stroke-width="1.5"/>`;
+ $('gplot').innerHTML=s;
+}
+let lastGcodeOut='';
+function runGcode(){
+ const txt=$('gin').value.trim();
+ if(!txt)return alert('Önce G-kodu yapıştırın veya dosya seçin.');
+ const r=GCODE.optimize(txt,{
+  mainE:$('gMainE').value.trim(), safeE:$('gSafeE').value.trim(),
+  useEntryExit:$('gUseEE').checked, entryMm:+$('gLead').value||4, exitMm:+$('gLead').value||4,
+  useCorner:$('gUseCorner').checked, cornerAngle:+$('gAng').value||15, cornerLeadMm:2.5,
+  useSegArc:$('gUseSeg').checked, segMaxMm:120,
+  useTab:$('gUseTab').checked, tabMm:2, useAwt:$('gUseAwt').checked
+ });
+ $('gresCard').classList.remove('hide');
+ if(r.error){$('gBadge').textContent='HATA';$('gBadge').className='badge b-crit';$('gStats').innerHTML=r.error;$('gout').value='';lastGcodeOut='';return;}
+ const b=$('gBadge');
+ if(r.ok){b.textContent='✔ 0.0001mm DOĞRULANDI';b.className='badge b-low';$('gDl').disabled=false;lastGcodeOut=r.output;}
+ else{b.textContent='✖ DOĞRULAMA HATASI';b.className='badge b-crit';$('gDl').disabled=true;lastGcodeOut='';}
+ $('gStats').className=r.ok?'okbox':'warn';
+ $('gStats').innerHTML=r.ok
+  ? `Toplam yol: <b>${r.totalLen} mm</b> · Sapma: <b>${r.check.lenDiff} mm</b> · Maks yay hatası: <b>${r.check.maxArcErr} mm</b><br>Eklenen: <b>${r.stats.splits}</b> blok bölme, <b>${r.stats.eSwitches}</b> E-kod geçişi, <b>${r.stats.cornerZones}</b> köşe koruması`
+  : `<b>İndirme kilitlendi:</b><br>${r.check.errors.join('<br>')}`;
+ $('gout').value=r.output;
+ drawGplot(r.plotSegs,r.corners);
+}
+$('gRun').onclick=runGcode;
+$('gDl').onclick=()=>{if(!lastGcodeOut)return;const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([lastGcodeOut],{type:'text/plain'}));a.download='EXCETEK_OPTIMIZE.NC';a.click();};
+$('gCopy').onclick=()=>{if(!$('gout').value)return;navigator.clipboard.writeText($('gout').value).then(()=>alert('Kopyalandı!'));};
 
 if('serviceWorker' in navigator)navigator.serviceWorker.register('sw.js');
 </script>
